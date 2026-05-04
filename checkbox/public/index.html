@@ -4,14 +4,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Checkbox Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            min-height: 100vh;
+            padding: 60px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 50px;
+            font-size: 3rem;
+            font-weight: 300;
+            letter-spacing: -1px;
+            color: #f1f5f9;
+            position: relative;
+            padding-bottom: 20px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+            border-radius: 2px;
+        }
+
+        #container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(32px, 1fr));
+            gap: 16px;
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 50px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        input[type="checkbox"] {
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            accent-color: #3b82f6;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            appearance: none;
+            -webkit-appearance: none;
+            background: #1e293b;
+            border: 1.5px solid #475569;
+            border-radius: 6px;
+        }
+
+        input[type="checkbox"]:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        input[type="checkbox"]:checked {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        input[type="checkbox"]:checked::after {
+            content: '✓';
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        input[type="checkbox"]:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
+        input[type="checkbox"]:active {
+            transform: translateY(-1px) scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 40px 15px;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+                margin-bottom: 40px;
+            }
+
+            #container {
+                grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
+                gap: 14px;
+                padding: 35px;
+            }
+
+            input[type="checkbox"] {
+                width: 26px;
+                height: 26px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 30px 12px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 30px;
+            }
+
+            #container {
+                grid-template-columns: repeat(auto-fit, minmax(24px, 1fr));
+                gap: 12px;
+                padding: 25px;
+            }
+
+            input[type="checkbox"] {
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background-color: #ef4444;
+            color: #ffffff;
+            padding: 16px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            min-width: 250px;
+            max-width: 400px;
+            animation: slideIn 0.3s ease-out;
+            pointer-events: auto;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .toast.success {
+            background-color: #22c55e;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .toast.error {
+            background-color: #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .toast.warning {
+            background-color: #f59e0b;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast.remove {
+            animation: slideOut 0.3s ease-out forwards;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>One Million Checkbox</h1>
+    <div id="toast-container"></div>
+    <h1>Checkboxes</h1>
+    <div id="container"></div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
+        const container = document.getElementById('container');
+
+
+        socket.on();
+
+        socket.on('server:error', (data) => {
+            console.log(`server:error`, data);
+            const errorMessage = data && data.error;
+            
+        })
+
+        socket.on('server:checkbox:change', (data) => {
+            console.log(`server:checkbox:change`, data);
+
+            const { index, checked } = data
+
+            const input = document.getElementById(`checkbox-${index}`);
+            if (input) {
+                input.checked = checked
+            }
+        })
+
+
+        async function fetchData() {
+            while (container.firstChild) {
+                container.removeChild(container.firstChild)
+            }
+            const response = await fetch('/checkboxes', { method: 'GET' });
+            const data = await response.json();
+            if (data && data.checkboxes) {
+                data.checkboxes.forEach((serverVal, index) => {
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.id = `checkbox-${index}`;
+                    input.checked = serverVal;
+
+                    input.addEventListener('change', (event) => {
+                        const checked = event.target.checked
+                        console.log({ index, checked })
+                        socket.emit('client:checkbox:change', { index, checked })
+                    })
+                    // fetchData()
+                    container.appendChild(input)
+                })
+            }
+        }
+
+        window.addEventListener('load', async () => {
+            fetchData()
+        })
+
     </script>
 </body>
+
 </html>
